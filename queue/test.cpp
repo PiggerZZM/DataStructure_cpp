@@ -1,6 +1,7 @@
 #include "SeqQueue.h"
 #include <iostream>
 #include "LinkQueue.h"
+#include "PQueue.h"
 using namespace std;
 
 int main()
@@ -26,9 +27,17 @@ int main()
     cout << x << endl;
     y = lq.IsEmpty();
     cout << y << endl;
-    */
+    
 
-   
+   // 测试优先队列
+   PQueue<int> pq;
+   pq.Insert(10);
+   pq.Insert(30);
+   pq.Insert(20);
+   int x;
+   pq.RemoveMin(x);
+   cout << x << endl;
+    */
 
     return 0;
 }

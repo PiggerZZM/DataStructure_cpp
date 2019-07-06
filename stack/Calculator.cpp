@@ -72,7 +72,7 @@ bool Calculator::postfix(char *expression)
 {
     int length = strlen(expression);
     int count = 0; // 用来记录生成后缀表达式时下一个字符的位置
-    char expression_tmp[length];
+    char expression_tmp[100];
     strcpy(expression_tmp, expression);
     op_stack.Push('#');
     char tmp, op;

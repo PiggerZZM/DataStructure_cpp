@@ -1,5 +1,6 @@
 #include "SeqStack.h"
 #include "LinkStack.h"
+#include "SeqDbStack.h"
 #include <iostream>
 
 int main()
@@ -31,6 +32,18 @@ int main()
     printf("%d\n",ls.IsEmpty());
     ls.MakeEmpty();
     printf("%d\n",ls.IsEmpty());
+    
+
+    // ²âÊÔË«Õ»¹²Ïí¿Õ¼ä
+    SeqDbStack<int> sds;
+    printf("%d\n",sds.IsEmpty(0));
+    sds.Push(1,10);
+    sds.Push(0,30);
+    sds.Push(1,20);
+    printf("%d\n",sds.IsFull());
+    int x;
+    sds.Pop(1,x);
+    printf("%d\n",x);
     */
 
     return 0;
