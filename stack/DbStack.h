@@ -6,7 +6,7 @@ template<class T>
 class DbStack
 {
 public:
-    DbStack(){}
+    DbStack(){};
     virtual void Push(int num, const T x) = 0;
     virtual bool Pop(int num, T &x) = 0;
     virtual bool IsEmpty(int num) const = 0;
