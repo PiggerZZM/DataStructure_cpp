@@ -7,6 +7,32 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+
+template <class T>
+struct GenListNode
+{
+    int utype;             // 标志域：结点类型 0表示头结点，1表示原子结点，2表示子表结点
+    GenListNode<T> *tlink; // 尾指针域：指向同层下一个结点的指针
+    union                  //  信息域
+    {
+        int ref;               // 表头结点：该表的引用数
+        T value;               // 原子结点：该原子结点的值
+        GenListNode<T> *hlink; // 表结点：指向该子表头结点的指针
+    } info;
+    GenListNode()
+    {
+        utype = 0;
+        tlink = NULL;
+        info.ref = 0;
+    }
+    GenListNode(GenListNode<T> &RL)
+    {
+        utype = RL.utype;
+        tlink = RL.tlink;
+        info = RL.info;
+    }
+};
+
 template <class T>
 struct Items
 {
@@ -16,36 +42,17 @@ struct Items
         T value;
         GenListNode<T> *hlink;
     } info;
-    Items() : utype(0), info.ref(0) {}
+    Items()
+    {
+        utype = 0;
+        info.ref = 0;
+    }
     Items(Items<T> &RL)
     {
         utype = RL.utype;
         info = RL.info;
     }
 };
-
-template <class T>
-struct GenListNode
-{
-private:
-    int utype;             // 标志域：结点类型 0表示头结点，1表示原子结点，2表示子表结点
-    GenListNode<T> *tlink; // 尾指针域：指向同层下一个结点的指针
-    union                  //  信息域
-    {
-        int ref;               // 表头结点：该表的引用数
-        T value;               // 原子结点：该原子结点的值
-        GenListNode<T> *hlink; // 表结点：指向该子表头结点的指针
-    } info;
-
-public:
-    GenListNode() : utype(0), tlink(NULL), info.ref(0) {}
-    GenListNode(GenListNode<T> &RL)
-    {
-        utype = RL.utype;
-        tlink = RL.tlink;
-        info = RL.info;
-    }
-}
 
 template <class T>
 class GenList
@@ -60,14 +67,14 @@ private:
 public:
     GenList();
     ~GenList();
-    bool Head(Items &x);                        // 返回表头元素
+    bool Head(Items<T> &x);                        // 返回表头元素
     bool Tail(GenList<T> &lt);                  // 返回表尾
     GenListNode<T> *First();                    // 取表头
     GenListNode<T> *Next(GenListNode<T> *elem); // 取elem的直接后继元素
     void Copy(const GenList<T> &R);
     int Length();
     int depth();
-}
+};
 
 template <class T>
 GenListNode<T> *GenList<T>::Copy(GenListNode<T> *ls)
@@ -147,7 +154,7 @@ int GenList<T>::depth(GenListNode<T> *fir)
 template <class T>
 GenList<T>::GenList()
 {
-    first = new GenListNode;
+    first = new GenListNode<T>;
     assert(first != NULL);
 }
 
@@ -161,6 +168,35 @@ bool GenList<T>::Head(Items<T> &x)
         x.utype = first->tlink->utype;
         x.info = first->tlink->info;
         return true;
+    }
+}
+
+template<class T>
+GenList<T>::~GenList()
+{
+    Remove(first);
+}
+
+template<class T>
+void GenList<T>::Remove(GenListNode<T> *ls)
+{
+    // 释放以ls为表头的广义表
+    ls->info.ref--;
+    if(ls->info.ref <= 0)
+    {
+        GenListNode<T> *q;
+        while(ls->tlink != NULL)
+        {
+            q = ls->tlink;
+            if(q->utype == 2)
+            {
+                Remove(q->info.hlink);
+                if(q->info.hlink->info.ref <= 0)
+                    delete q->info.hlink;
+            }
+            ls->tlink = q->tlink;
+            delete q;
+        }
     }
 }
 
@@ -195,5 +231,6 @@ GenListNode<T> *GenList<T>::Next(GenListNode<T> *elem)
     else
         return elem->tlink;
 }
+
 
 #endif
