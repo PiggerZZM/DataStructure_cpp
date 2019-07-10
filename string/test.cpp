@@ -12,7 +12,10 @@ int main()
     int len = mystr.Length();
     int index_b = mystr.Find(mystr1);
     printf("%d,%d,%c\n",index_b,len,ch);
-    
+    AString b("b");
+    AString xybb("xybb");
+    mystr.replace(b,xybb);
+    mystr.replace(xybb,b);
 
     return 0;
 }
