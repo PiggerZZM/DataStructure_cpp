@@ -13,6 +13,6 @@ int main()
     cout << t2.IsEmpty() << endl;
     const char b = 'B';
     cout << t2.Find(b)->data << endl;
-
+    
     return 0;
 }

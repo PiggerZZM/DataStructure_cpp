@@ -4,6 +4,7 @@
 // 程序5.2 二叉树的二叉链表表示
 #include <iostream>
 #include <stdlib.h>
+#include "SeqQueue.h"
 using namespace std;
 const char RefValue = '#';
 
@@ -49,7 +50,7 @@ private:
     void PreOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p)); // 函数指针，visit函数为用户定义访问函数
     void InOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
     void PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
-    void levelOrder(void (*visit)(BinTreeNode<T> *p));
+    void LevelOrder(void (*visit)(BinTreeNode<T> *p));
     void output(BinTreeNode<T> *subTree); //  从subTree结点开始按先序遍历序列输出二叉树
     BinTreeNode<T> *Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *current); // 从subTree结点开始按照先序遍历找父结点
     BinTreeNode<T> *LeftChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->leftChild; }
@@ -232,6 +233,23 @@ BinTreeNode<T>* BinaryTree<T>::Find(const T value)
 {
     BinTreeNode<T> *temp = Find(root,value);
     return temp;
+}
+
+template<class T>
+void BinaryTree<T>::LevelOrder(void (*visit)(BinTreeNode<T> *p))
+{
+    SeqQueue<BinTreeNode<T> *> Q;
+    BinTreeNode<T> *p = root;
+    Q.EnQueue(p);
+    while(! Q.IsEmpty())
+    {
+        Q.DeQueue(p);
+        visit(p);
+        if(p->leftChild != NULL)
+            Q.EnQueue(p->leftChild);
+        if(p->rightChild != NULL)
+            Q.EnQueue(p->rightChild);
+    }
 }
 
 #endif
