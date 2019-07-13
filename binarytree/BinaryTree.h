@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "SeqQueue.h"
 using namespace std;
-const char RefValue = '#';
+const char RefValue = '#';  // 子女为空的标志
 
 template <class T>
 struct BinTreeNode
@@ -51,7 +51,7 @@ private:
     void InOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
     void PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
     void LevelOrder(void (*visit)(BinTreeNode<T> *p));
-    void output(BinTreeNode<T> *subTree); //  从subTree结点开始按先序遍历序列输出二叉树
+    void output(); //  从subTree结点开始按先序遍历序列输出二叉树
     BinTreeNode<T> *Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *current); // 从subTree结点开始按照先序遍历找父结点
     BinTreeNode<T> *LeftChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->leftChild; }
     BinTreeNode<T> *RightChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->rightChild; }
@@ -88,6 +88,7 @@ public:
     }
 };
 
+// 递归：先访问当前结点，然后先序遍历左子树，再先序遍历右子树，递归出口是当前结点为空
 template <class T>
 void BinaryTree<T>::PreOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p))
 {
@@ -121,6 +122,7 @@ void BinaryTree<T>::PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode
     }
 }
 
+// 后序遍历删除子树：先删除左子树，再删除右子树，再删除当前结点
 template <class T>
 void BinaryTree<T>::destroy(BinTreeNode<T> *subTree)
 {
@@ -132,12 +134,15 @@ void BinaryTree<T>::destroy(BinTreeNode<T> *subTree)
     }
 }
 
+// 按先序遍历输出所有节点
 template <class T>
-void BinaryTree<T>::output(BinTreeNode<T> *subTree)
+void BinaryTree<T>::output()
 {
     PreOrder(root,Print);
 }
 
+// 递归求current结点的父节点
+// 先看该节点是否是父节点，再到左子女里搜索，再到右子女里搜索，递归出口是结点为空
 template <class T>
 BinTreeNode<T> *BinaryTree<T>::Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *current)
 {
@@ -155,6 +160,8 @@ BinTreeNode<T> *BinaryTree<T>::Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *c
     }
 }
 
+
+// 左子树的大小加上右子树的大小+1
 template <class T>
 int BinaryTree<T>::Size(BinTreeNode<T> *subTree)
 {
@@ -164,6 +171,7 @@ int BinaryTree<T>::Size(BinTreeNode<T> *subTree)
         return Size(subTree->leftChild) + Size(subTree->rightChild) + 1;
 }
 
+// 左子树和右子树高度的最大值+1
 template <class T>
 int BinaryTree<T>::Height(BinTreeNode<T> *subTree) const
 {
@@ -177,12 +185,14 @@ int BinaryTree<T>::Height(BinTreeNode<T> *subTree) const
     }
 }
 
+// 复制构造函数，调用私有函数copy
 template <class T>
 BinaryTree<T>::BinaryTree(const BinaryTree<T> &s)
 {
     root = Copy(s.root);
 }
 
+// 私有函数copy，递归算法：先复制当前结点，然后复制左子树，再复制右子树
 template <class T>
 BinTreeNode<T> *BinaryTree<T>::Copy(BinTreeNode<T> *orinode)
 {
@@ -195,6 +205,7 @@ BinTreeNode<T> *BinaryTree<T>::Copy(BinTreeNode<T> *orinode)
     return temp;
 }
 
+//  输入先序遍历序列构建二叉树
 template <class T>
 void BinaryTree<T>::CreateBinTree(istream &in, BinTreeNode<T> *&subTree)
 {
@@ -235,6 +246,7 @@ BinTreeNode<T>* BinaryTree<T>::Find(const T value)
     return temp;
 }
 
+// 层次遍历：根节点入队，每遍历一个结点就将其左子女和右子女入队
 template<class T>
 void BinaryTree<T>::LevelOrder(void (*visit)(BinTreeNode<T> *p))
 {
