@@ -42,7 +42,7 @@ private:
     // 因此将这些递归算法的实现全部放在私有域，留下不需要参数的接口放在公共域
     // 公共域的函数实现为调用私有域的对应函数，并将私有参数作为参数传入
     BinTreeNode<T> *root; // 根指针
-    void destroy(BinTreeNode<T> *subTree);
+    void destroy(BinTreeNode<T> *&subTree);
     int Height(BinTreeNode<T> *subTree) const;
     int Size(BinTreeNode<T> *subTree);
     void CreateBinTree(istream &in, BinTreeNode<T> *&subTree); // 根据前序遍历序列建立二叉树
@@ -52,11 +52,13 @@ private:
     void PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
     void LevelOrder(void (*visit)(BinTreeNode<T> *p));
     void output(); //  从subTree结点开始按先序遍历序列输出二叉树
+    void Switch(BinTreeNode<T> *subTree);
     BinTreeNode<T> *Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *current); // 从subTree结点开始按照先序遍历找父结点
     BinTreeNode<T> *LeftChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->leftChild; }
     BinTreeNode<T> *RightChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->rightChild; }
     BinTreeNode<T> *Find(BinTreeNode<T> *subTree, const T value);
     friend bool equal<T>(BinTreeNode<T> *a, BinTreeNode<T> *b); // 判断是否相等
+    int CountLeaf(BinTreeNode<T> *subTree);
     static void Print(BinTreeNode<T> *p)
     {
         cout << p->data << " ";
@@ -68,10 +70,12 @@ public:
     int Height() { return Height(root);}
     int Size() { return Size(root);}
     bool IsEmpty() { return root == NULL; }
+    void Switch();
     BinTreeNode<T> *Find(const T x);    // 按照先序遍历序列搜索x
     BinTreeNode<T> *getRoot() const { return root; } // 取根指针
     bool Insert(T item);     // 按照find函数搜索失败的位置插入
-    bool Remove(T item);     // 按照find函数搜索成功的位置删除子树      
+    bool Remove(T item);     // 按照find函数搜索成功的位置删除子树
+    int CountLeaf();      
     friend bool operator==(const BinaryTree<T> &s, const BinaryTree<T> &t)  // 判两棵二叉树是否相等
     {
         return equal(s.root, t.root);
@@ -83,7 +87,7 @@ public:
     }
     friend ostream& operator<< (ostream& out, BinaryTree<T> &t) // 按先序遍历输出
     {
-        t.output(t.root);
+        t.output();
         return out;
     }
 };
@@ -124,7 +128,7 @@ void BinaryTree<T>::PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode
 
 // 后序遍历删除子树：先删除左子树，再删除右子树，再删除当前结点
 template <class T>
-void BinaryTree<T>::destroy(BinTreeNode<T> *subTree)
+void BinaryTree<T>::destroy(BinTreeNode<T> *&subTree)
 {
     if (subTree != NULL)
     {
@@ -262,6 +266,41 @@ void BinaryTree<T>::LevelOrder(void (*visit)(BinTreeNode<T> *p))
         if(p->rightChild != NULL)
             Q.EnQueue(p->rightChild);
     }
+}
+
+template<class T>
+int BinaryTree<T>::CountLeaf()
+{
+    return CountLeaf(root);
+}
+
+template<class T>
+int BinaryTree<T>::CountLeaf(BinTreeNode<T> *subTree)
+{
+    if(subTree == NULL)
+        return 0;
+    if(subTree->leftChild == NULL && subTree->rightChild == NULL)
+        return 1;
+    else
+        return CountLeaf(subTree->leftChild) + CountLeaf(subTree->rightChild);
+}
+
+template<class T>
+void BinaryTree<T>::Switch()
+{
+    Switch(root);
+}
+
+template<class T>
+void BinaryTree<T>::Switch(BinTreeNode<T> *subTree)
+{
+    if(subTree->leftChild != NULL)
+        Switch(subTree->leftChild);
+    if(subTree->rightChild != NULL)
+        Switch(subTree->rightChild);
+    BinTreeNode<T> *temp1 = subTree->leftChild;
+    subTree->leftChild = subTree->rightChild;
+    subTree->rightChild = temp1;
 }
 
 #endif

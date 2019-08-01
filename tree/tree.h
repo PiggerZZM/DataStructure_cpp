@@ -2,14 +2,16 @@
 #ifndef TREE_H
 #define TREE_H
 
+#include <iostream>
 #include "SeqQueue.h"
+using namespace std;
 template<class T>
 struct TreeNode
 {
     T data;
     TreeNode<T> *firstChild, *nextSibling; // ×ó×ÓÅ®ÓÒÐÖµÜÖ¸Õë
     TreeNode(T value = 0, TreeNode<T> *fc = NULL, TreeNode<T> *ns = NULL):data(value),firstChild(fc),nextSibling(ns){}     
-}
+};
 
 template<class T>
 class Tree
@@ -53,7 +55,7 @@ bool Tree<T>::Parent()
     TreeNode<T> *p = current;
     if(current == NULL || current == root)
     {
-        curren = NULL;
+        current = NULL;
         return false;
     }
     return FindParent(root, p);

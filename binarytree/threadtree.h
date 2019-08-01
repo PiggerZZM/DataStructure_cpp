@@ -138,6 +138,4 @@ void ThreadTree<T>::PreOrder(void (*visit)(ThreadNode<T> *p))
     }
 }
 
-
-
 #endif

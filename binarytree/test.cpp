@@ -13,6 +13,8 @@ int main()
     cout << t2.IsEmpty() << endl;
     const char b = 'B';
     cout << t2.Find(b)->data << endl;
-    
+    cout << t2.CountLeaf() << endl;
+    t2.Switch();
+    cout << t2 << endl;
     return 0;
 }
