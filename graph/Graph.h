@@ -2,7 +2,7 @@
 #define GRAPH_H
 
 // 程序8.2 带权无向图的模板类
-const int DefaultVertices = 30;
+#define DefaultVertices 30
 template<class T, class E>  // T是顶点类，E是权值类
 class Graph
 {

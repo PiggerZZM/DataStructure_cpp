@@ -1,11 +1,13 @@
 #include "Graphmtx.h"
+#include "Graphlnk.h"
 #include <iostream>
 
 int main()
 {
-    Graphmtx<int,int> G(5);
+    Graphmtx<int,int> G(10);
     cin >> G;
-    cout << G;
+    MinSpanTree<int,int> MST;
+    G.Kruskal(MST);
     
     return 0;
 }
