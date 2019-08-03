@@ -46,10 +46,9 @@ public:
 };
 
 template<class E, class K>
-BSTree<E,K>::BSTree(K Ref)
+BSTree<E,K>::BSTree(K Ref):root(NULL),RefValue(Ref)
 {
     // 输入一个序列构造二叉搜索树
-    RefValue = Ref;
     E x;
     cin >> x;
     while(x != RefValue)
