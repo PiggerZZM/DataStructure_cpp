@@ -7,7 +7,7 @@ int main()
     Graphmtx<int,int> G(10);
     cin >> G;
     MinSpanTree<int,int> MST;
-    G.Kruskal(MST);
+    G.printShortestPath(0);
     
     return 0;
 }

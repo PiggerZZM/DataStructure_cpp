@@ -97,6 +97,9 @@ public:
     int NumberOfEdges() { return numEdges; }
     void DFS(Graphlnk<T,E> &G, const T v);
     void BFS(Graphlnk<T,E> &G, const T v);
+    void Kruskal(MinSpanTree<T,E>& MST);
+    void Prim(const T u0, MinSpanTree<T,E>& MST);
+    void printShortestPath(T v0);
 
 private:
     Vertex<T, E> *NodeTable;
@@ -111,6 +114,7 @@ private:
     int numEdges;
     int maxVertices;
     void DFS(Graphlnk<T,E> &G, int v, bool visited[]);
+    void Dijkstra(T v0, E dist[], int path[]);
 };
 
 template <class T, class E>
@@ -353,6 +357,164 @@ void Graphlnk<T,E>::BFS(Graphlnk<T,E> &G, const T v)
         }
     }
     delete []visited;
+}
+
+template<class T, class E>
+void Graphlnk<T,E>::Kruskal(MinSpanTree<T,E>& MST)
+{
+    int n = numVertices;
+    int m = numEdges;
+    MSTEdgeNode<T,E> ed;
+    MinHeap<MSTEdgeNode<T,E>> H(m); // 边集组成最小堆
+    UFSets F(n);    // 顶点集组成并查集
+    for(int i=0;i<n;i++)    // 遍历所有可能的边，插入到堆
+    {
+        int head = NodeTable[i].data;
+        Edge<T,E> *p = NodeTable[i].first;
+        MSTEdgeNode<T,E> ed;
+        while(p != NULL)
+        {
+            int tail = p->dest;
+            if(head < tail)
+            {
+                ed.head = head;
+                ed.tail = tail;
+                ed.weight = p->cost;
+                H.Insert(ed);
+            }
+            p = p->link;
+        }
+    }
+    int count = 0;
+    while(count < n-1)
+    {
+        int root1,root2;
+        H.RemoveMin(ed);
+        root1 = F.Find(ed.head);
+        root2 = F.Find(ed.tail);
+        if(root1 != root2)
+        {
+            F.Union(root1,root2);
+            MST.Insert(ed);
+            count++;
+        }
+    }
+}
+
+template<class T, class E>
+void Graphlnk<T,E>::Prim(const T u0, MinSpanTree<T,E>& MST)
+{
+    int n = numVertices;
+    int m = numEdges;
+    int u = getVertexPos(u0),v;
+    MinHeap<MSTEdgeNode<T,E>> H(m);
+    bool* Vmst = new bool[n];
+    for(int i=0;i<n;i++)
+        Vmst[i] = false;
+    Vmst[u] = true;
+
+    MSTEdgeNode<T,E> ed;
+    int count = 0;
+    do
+    {
+        v = getFirstNeighbor(u);
+        while(v != -1)
+        {
+            if(Vmst[v] == false)
+            {
+                ed.tail = u;
+                ed.head = v;
+                ed.weight = getWeight(u,v);
+                H.Insert(ed);
+            }
+            v = getNextNeighbor(u,v);
+        }
+        while(!H.IsEmpty() && count < n-1)
+        {
+            H.RemoveMin(ed);
+            if(Vmst[ed.head] == false)
+            {
+                MST.Insert(ed);
+                u = ed.head;
+                Vmst[u] = true;
+                count++;
+                break;
+            }
+        }
+    } while (count < n-1);
+}
+
+template<class T, class E>
+void Graphlnk<T,E>::Dijkstra(T v0, E dist[], int path[])
+{
+    int v = getVertexPos(v0);
+    int n = numVertices;
+    bool* S = new bool[n];
+    for(int i=0;i<n;i++)    // 初始化S,dist,path
+    {
+        dist[i] = getWeight(v,i);
+        S[i] = false;
+        if(i != v && dist[i] < maxValue)
+            path[i] = v;
+        else
+            path[i] = -1;
+    }
+
+    S[v] = true;
+    dist[v] = 0;
+    for(int i=0;i<n-1;i++)  // 计数循环，除了初始点外还要加入n-1个点
+    {
+        int min = maxValue;
+        int u = v;
+        for(int j=0;j<n;j++)    // 选出还不在集合S中的离v最近的点
+        {
+            if(S[j] == false && dist[j] < min)
+            {
+                u = j;
+                min = dist[j];
+            }
+        }
+        S[u] = true;
+        for(int k=0;k<n;k++)    //  用u作为中继点缩短其他点到v0的距离
+        {
+            E w = getWeight(u,k);
+            if(S[k] == false && w < maxValue && w + dist[u] < dist[k])
+            {
+                dist[k] = w + dist[u];
+                path[k] = u;
+            }
+        }
+    }
+}
+
+template<class T, class E>
+void Graphlnk<T,E>::printShortestPath(T v0)
+{
+    cout << "从顶点" << v0 << "到其他顶点的最短路径为：" << endl;
+    int n = numVertices;
+    int v = getVertexPos(v0);
+    E *dist = new E[n];
+    int path[n];
+    int j,k;
+    Dijkstra(v0,dist,path);
+    int p[n];
+    for(int i=0;i<n;i++)
+    {
+        if(i != v)
+        {
+            j = i;
+            k = 0;
+            while(j != v)
+            {
+                p[k++] = j;
+                j = path[j];
+            }
+            cout << "顶点" << getValue(i) << "的最短路径为：" << getValue(v);
+            while(k > 0)
+                cout << " " << getValue(p[--k]);
+            cout << endl;
+        }
+    }
 }
 
 #endif
