@@ -35,7 +35,7 @@ MinHeap<T>::MinHeap(int sz)
 template<class T>
 MinHeap<T>::MinHeap(T arr[], int n)
 {
-    maxHeapSize = (DefaultSize<n)?n:DefaultSize;
+    maxHeapSize = n;
     heap = new T[maxHeapSize];
     for(int i=0;i<n;i++)
         heap[i] = arr[i];

@@ -2,6 +2,8 @@
 #define GRAPHLNK_H
 
 // 程序8.6 用邻接表表示的图的类定义
+// 本程序中邻接矩阵和邻接表实现的图都是无向图，修改为有向图可能要考虑输入输出的重载、以及可能有些地方我没有区分边的头尾
+// Dijkstra和Bellman-Ford算法实现还有问题
 #include "SeqQueue.h"
 #include "MinSpanTree.h"
 #include "UFset.h"
@@ -95,11 +97,12 @@ public:
     }
     int NumberOfVertices() { return numVertices; }
     int NumberOfEdges() { return numEdges; }
-    void DFS(Graphlnk<T,E> &G, const T v);
-    void BFS(Graphlnk<T,E> &G, const T v);
-    void Kruskal(MinSpanTree<T,E>& MST);
-    void Prim(const T u0, MinSpanTree<T,E>& MST);
-    void printShortestPath(T v0);
+    void DFS(Graphlnk<T, E> &G, const T v);
+    void BFS(Graphlnk<T, E> &G, const T v);
+    void Kruskal(MinSpanTree<T, E> &MST);
+    void Prim(const T u0, MinSpanTree<T, E> &MST);
+    void printShortestPath_Dij(T v0);
+    void printShortestPath_BF(T v0);
 
 private:
     Vertex<T, E> *NodeTable;
@@ -113,8 +116,10 @@ private:
     int numVertices;
     int numEdges;
     int maxVertices;
-    void DFS(Graphlnk<T,E> &G, int v, bool visited[]);
+    void DFS(Graphlnk<T, E> &G, int v, bool visited[]);
     void Dijkstra(T v0, E dist[], int path[]);
+    void Bellman_Ford(T v0, E dist[], int path[]);
+    
 };
 
 template <class T, class E>
@@ -272,7 +277,7 @@ bool Graphlnk<T, E>::removeEdge(int v1, int v2)
     if (v1 != -1 && v2 != -1)
     {
         Edge<T, E> *p = NodeTable[v1].first, *q = NULL, *s = p;
-        while (p != NULL && p->dest != v2)  // 在v1的边链表中删除
+        while (p != NULL && p->dest != v2) // 在v1的边链表中删除
         {
             q = p;
             p = p->link;
@@ -287,7 +292,7 @@ bool Graphlnk<T, E>::removeEdge(int v1, int v2)
         }
         else
             return false;
-        p = NodeTable[v2].first;    // 在v2的边链表中删除
+        p = NodeTable[v2].first; // 在v2的边链表中删除
         q = NULL, s = p;
         while (p->dest != v1)
         {
@@ -304,78 +309,78 @@ bool Graphlnk<T, E>::removeEdge(int v1, int v2)
     return false;
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::DFS(Graphlnk<T,E> &G, const T v)
+template <class T, class E>
+void Graphlnk<T, E>::DFS(Graphlnk<T, E> &G, const T v)
 {
     int n = G.NumberOfVertices();
     bool *visited = new bool[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
         visited[i] = false;
     int loc = G.getVertexPos(v);
-    DFS(G,loc,visited);
-    delete []visited;
+    DFS(G, loc, visited);
+    delete[] visited;
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::DFS(Graphlnk<T,E> &G, int v, bool visited[])
+template <class T, class E>
+void Graphlnk<T, E>::DFS(Graphlnk<T, E> &G, int v, bool visited[])
 {
     cout << G.getValue(v) << " ";
     visited[v] = true;
     int w = G.getFirstNeighbor(v);
-    while(w != -1)
+    while (w != -1)
     {
-        if(visited[w] == false)
-            DFS(G,w,visited);
-        w = G.getNextNeighbor(v,w);
+        if (visited[w] == false)
+            DFS(G, w, visited);
+        w = G.getNextNeighbor(v, w);
     }
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::BFS(Graphlnk<T,E> &G, const T v)
+template <class T, class E>
+void Graphlnk<T, E>::BFS(Graphlnk<T, E> &G, const T v)
 {
     int n = G.NumberOfVertices();
     bool *visited = new bool[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
         visited[i] = false;
     int loc = G.getVertexPos(v);
     SeqQueue<int> Q;
     Q.EnQueue(loc);
-    while(!Q.IsEmpty())
+    while (!Q.IsEmpty())
     {
         Q.DeQueue(loc);
-        if(visited[loc] == false)
+        if (visited[loc] == false)
         {
             cout << G.getValue(loc) << " ";
             visited[loc] = true;
         }
         int w = G.getFirstNeighbor(loc);
-        while(w != -1)
+        while (w != -1)
         {
-            if(visited[w] == false)
+            if (visited[w] == false)
                 Q.EnQueue(w);
-            w = G.getNextNeighbor(loc,w);
+            w = G.getNextNeighbor(loc, w);
         }
     }
-    delete []visited;
+    delete[] visited;
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::Kruskal(MinSpanTree<T,E>& MST)
+template <class T, class E>
+void Graphlnk<T, E>::Kruskal(MinSpanTree<T, E> &MST)
 {
     int n = numVertices;
     int m = numEdges;
-    MSTEdgeNode<T,E> ed;
-    MinHeap<MSTEdgeNode<T,E>> H(m); // 边集组成最小堆
-    UFSets F(n);    // 顶点集组成并查集
-    for(int i=0;i<n;i++)    // 遍历所有可能的边，插入到堆
+    MSTEdgeNode<T, E> ed;
+    MinHeap<MSTEdgeNode<T, E>> H(m); // 边集组成最小堆
+    UFSets F(n);                     // 顶点集组成并查集
+    for (int i = 0; i < n; i++)      // 遍历所有可能的边，插入到堆
     {
         int head = NodeTable[i].data;
-        Edge<T,E> *p = NodeTable[i].first;
-        MSTEdgeNode<T,E> ed;
-        while(p != NULL)
+        Edge<T, E> *p = NodeTable[i].first;
+        MSTEdgeNode<T, E> ed;
+        while (p != NULL)
         {
             int tail = p->dest;
-            if(head < tail)
+            if (head < tail)
             {
                 ed.head = head;
                 ed.tail = tail;
@@ -386,53 +391,53 @@ void Graphlnk<T,E>::Kruskal(MinSpanTree<T,E>& MST)
         }
     }
     int count = 0;
-    while(count < n-1)
+    while (count < n - 1)
     {
-        int root1,root2;
+        int root1, root2;
         H.RemoveMin(ed);
         root1 = F.Find(ed.head);
         root2 = F.Find(ed.tail);
-        if(root1 != root2)
+        if (root1 != root2)
         {
-            F.Union(root1,root2);
+            F.Union(root1, root2);
             MST.Insert(ed);
             count++;
         }
     }
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::Prim(const T u0, MinSpanTree<T,E>& MST)
+template <class T, class E>
+void Graphlnk<T, E>::Prim(const T u0, MinSpanTree<T, E> &MST)
 {
     int n = numVertices;
     int m = numEdges;
-    int u = getVertexPos(u0),v;
-    MinHeap<MSTEdgeNode<T,E>> H(m);
-    bool* Vmst = new bool[n];
-    for(int i=0;i<n;i++)
+    int u = getVertexPos(u0), v;
+    MinHeap<MSTEdgeNode<T, E>> H(m);
+    bool *Vmst = new bool[n];
+    for (int i = 0; i < n; i++)
         Vmst[i] = false;
     Vmst[u] = true;
 
-    MSTEdgeNode<T,E> ed;
+    MSTEdgeNode<T, E> ed;
     int count = 0;
     do
     {
         v = getFirstNeighbor(u);
-        while(v != -1)
+        while (v != -1)
         {
-            if(Vmst[v] == false)
+            if (Vmst[v] == false)
             {
                 ed.tail = u;
                 ed.head = v;
-                ed.weight = getWeight(u,v);
+                ed.weight = getWeight(u, v);
                 H.Insert(ed);
             }
-            v = getNextNeighbor(u,v);
+            v = getNextNeighbor(u, v);
         }
-        while(!H.IsEmpty() && count < n-1)
+        while (!H.IsEmpty() && count < n - 1)
         {
             H.RemoveMin(ed);
-            if(Vmst[ed.head] == false)
+            if (Vmst[ed.head] == false)
             {
                 MST.Insert(ed);
                 u = ed.head;
@@ -441,20 +446,20 @@ void Graphlnk<T,E>::Prim(const T u0, MinSpanTree<T,E>& MST)
                 break;
             }
         }
-    } while (count < n-1);
+    } while (count < n - 1);
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::Dijkstra(T v0, E dist[], int path[])
+template <class T, class E>
+void Graphlnk<T, E>::Dijkstra(T v0, E dist[], int path[])
 {
     int v = getVertexPos(v0);
     int n = numVertices;
-    bool* S = new bool[n];
-    for(int i=0;i<n;i++)    // 初始化S,dist,path
+    bool *S = new bool[n];
+    for (int i = 0; i < n; i++) // 初始化S,dist,path
     {
-        dist[i] = getWeight(v,i);
+        dist[i] = getWeight(v, i);
         S[i] = false;
-        if(i != v && dist[i] < maxValue)
+        if (i != v && dist[i] < maxValue)
             path[i] = v;
         else
             path[i] = -1;
@@ -462,23 +467,23 @@ void Graphlnk<T,E>::Dijkstra(T v0, E dist[], int path[])
 
     S[v] = true;
     dist[v] = 0;
-    for(int i=0;i<n-1;i++)  // 计数循环，除了初始点外还要加入n-1个点
+    for (int i = 0; i < n - 1; i++) // 计数循环，除了初始点外还要加入n-1个点
     {
         int min = maxValue;
         int u = v;
-        for(int j=0;j<n;j++)    // 选出还不在集合S中的离v最近的点
+        for (int j = 0; j < n; j++) // 选出还不在集合S中的离v最近的点
         {
-            if(S[j] == false && dist[j] < min)
+            if (S[j] == false && dist[j] < min)
             {
                 u = j;
                 min = dist[j];
             }
         }
         S[u] = true;
-        for(int k=0;k<n;k++)    //  用u作为中继点缩短其他点到v0的距离
+        for (int k = 0; k < n; k++) //  用u作为中继点缩短其他点到v0的距离
         {
-            E w = getWeight(u,k);
-            if(S[k] == false && w < maxValue && w + dist[u] < dist[k])
+            E w = getWeight(u, k);
+            if (S[k] == false && w < maxValue && w + dist[u] < dist[k])
             {
                 dist[k] = w + dist[u];
                 path[k] = u;
@@ -487,34 +492,98 @@ void Graphlnk<T,E>::Dijkstra(T v0, E dist[], int path[])
     }
 }
 
-template<class T, class E>
-void Graphlnk<T,E>::printShortestPath(T v0)
+template <class T, class E>
+void Graphlnk<T, E>::printShortestPath_Dij(T v0)
 {
     cout << "从顶点" << v0 << "到其他顶点的最短路径为：" << endl;
     int n = numVertices;
     int v = getVertexPos(v0);
     E *dist = new E[n];
     int path[n];
-    int j,k;
-    Dijkstra(v0,dist,path);
+    int j, k;
+    Dijkstra(v0, dist, path);
     int p[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
     {
-        if(i != v)
+        if (i != v)
         {
             j = i;
             k = 0;
-            while(j != v)
+            while (j != v)
             {
                 p[k++] = j;
                 j = path[j];
             }
             cout << "顶点" << getValue(i) << "的最短路径为：" << getValue(v);
-            while(k > 0)
+            while (k > 0)
                 cout << " " << getValue(p[--k]);
             cout << endl;
         }
     }
 }
 
+template <class T, class E>
+void Graphlnk<T, E>::Bellman_Ford(T v0, E dist[], int path[])
+{
+    int v = getVertexPos(v0);
+    int n = NumberOfVertices();
+    E w;
+    Edge<T, E> *p = NodeTable[v].first;
+    while (p != NULL)
+    {
+        dist[p->dest] = p->cost;
+        if (p->cost < maxValue)
+            path[p->dest] = v;
+        else
+            path[p->dest] = -1;
+        p = p->link;
+    }
+    for (int k = 2; k < n; k++) //  计数n-2次,同时也是将dist^1逐渐变为dist^k
+    {
+        for (int i = 0; i < n; i++) //  以所有顶点作为中继点，更新dist
+        {
+            p = NodeTable[i].first;
+            w = p->cost;
+            while (p != NULL)
+            {
+                if (dist[i] + w < dist[p->dest])
+                {
+                    dist[p->dest] = dist[i] + w;
+                    path[p->dest] = i;
+                }
+                p = p->link;
+            }
+        }
+    }
+}
+
+template<class T, class E>
+void Graphlnk<T,E>::printShortestPath_BF(T v0)
+{
+    cout << "从顶点" << v0 << "到其他顶点的最短路径为：" << endl;
+    int n = numVertices;
+    int v = getVertexPos(v0);
+    E *dist = new E[n];
+    int path[n];
+    int j, k;
+    Bellman_Ford(v0, dist, path);
+    int p[n];
+    for (int i = 0; i < n; i++)
+    {
+        if (i != v)
+        {
+            j = i;
+            k = 0;
+            while (j != v)
+            {
+                p[k++] = j;
+                j = path[j];
+            }
+            cout << "顶点" << getValue(i) << "的最短路径为：" << getValue(v);
+            while (k > 0)
+                cout << " " << getValue(p[--k]);
+            cout << endl;
+        }
+    }
+}
 #endif

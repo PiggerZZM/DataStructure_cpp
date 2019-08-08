@@ -82,11 +82,12 @@ public:
     }
     int NumberOfVertices() { return numVertices; }
     int NumberOfEdges() { return numEdges; }
-    void DFS(Graphmtx<T,E> &G, const T v);
-    void BFS(Graphmtx<T,E> &G, const T v);
-    void Kruskal(MinSpanTree<T,E>& MST);
-    void Prim(const T u0, MinSpanTree<T,E>& MST);
-    void printShortestPath(T v0);
+    void DFS(Graphmtx<T, E> &G, const T v);
+    void BFS(Graphmtx<T, E> &G, const T v);
+    void Kruskal(MinSpanTree<T, E> &MST);
+    void Prim(const T u0, MinSpanTree<T, E> &MST);
+    void printShortestPath_Dij(T v0);
+    void printShortestPath_BF(T v0);
 
 private:
     T *VerticesList; //  顶点表
@@ -101,8 +102,9 @@ private:
     int maxVertices;
     int numEdges;
     int numVertices;
-    void DFS(Graphmtx<T,E> &G, int v, bool visited[]);
+    void DFS(Graphmtx<T, E> &G, int v, bool visited[]);
     void Dijkstra(T v0, E dist[], int path[]);
+    void Bellman_Ford(T v0, E dist[], int path[]);
 };
 
 template <class T, class E>
@@ -183,126 +185,126 @@ bool Graphmtx<T, E>::insertEdge(int v1, int v2, E cost)
     return false;
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::DFS(Graphmtx<T,E> &G, const T v)
+template <class T, class E>
+void Graphmtx<T, E>::DFS(Graphmtx<T, E> &G, const T v)
 {
     int n = G.NumberOfVertices();
     bool *visited = new bool[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
         visited[i] = false;
     int loc = G.getVertexPos(v);
-    DFS(G,loc,visited);
-    delete []visited;
+    DFS(G, loc, visited);
+    delete[] visited;
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::DFS(Graphmtx<T,E> &G, int v, bool visited[])
+template <class T, class E>
+void Graphmtx<T, E>::DFS(Graphmtx<T, E> &G, int v, bool visited[])
 {
     cout << G.getValue(v) << " ";
     visited[v] = true;
     int w = G.getFirstNeighbor(v);
-    while(w != -1)
+    while (w != -1)
     {
-        if(visited[w] == false)
-            DFS(G,w,visited);
-        w = G.getNextNeighbor(v,w);
+        if (visited[w] == false)
+            DFS(G, w, visited);
+        w = G.getNextNeighbor(v, w);
     }
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::BFS(Graphmtx<T,E> &G, const T v)
+template <class T, class E>
+void Graphmtx<T, E>::BFS(Graphmtx<T, E> &G, const T v)
 {
     int n = G.NumberOfVertices();
     bool *visited = new bool[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
         visited[i] = false;
     int loc = G.getVertexPos(v);
     SeqQueue<int> Q;
     Q.EnQueue(loc);
-    while(!Q.IsEmpty())
+    while (!Q.IsEmpty())
     {
         Q.DeQueue(loc);
-        if(visited[loc] == false)
+        if (visited[loc] == false)
         {
             cout << G.getValue(loc) << " ";
             visited[loc] = true;
         }
         int w = G.getFirstNeighbor(loc);
-        while(w != -1)
+        while (w != -1)
         {
-            if(visited[w] == false)
+            if (visited[w] == false)
                 Q.EnQueue(w);
-            w = G.getNextNeighbor(loc,w);
+            w = G.getNextNeighbor(loc, w);
         }
     }
-    delete []visited;
+    delete[] visited;
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::Kruskal(MinSpanTree<T,E>& MST)
+template <class T, class E>
+void Graphmtx<T, E>::Kruskal(MinSpanTree<T, E> &MST)
 {
     int n = numVertices;
     int m = numEdges;
-    MSTEdgeNode<T,E> ed;
-    MinHeap<MSTEdgeNode<T,E>> H(m); // 边集组成最小堆
-    UFSets F(n);    // 顶点集组成并查集
-    for(int i=0;i<n;i++)    // 遍历所有可能的边，插入到堆
-        for(int j=i+1;j<n;j++)
-            if(getWeight(i,j) != maxWeight)
+    MSTEdgeNode<T, E> ed;
+    MinHeap<MSTEdgeNode<T, E>> H(m); // 边集组成最小堆
+    UFSets F(n);                     // 顶点集组成并查集
+    for (int i = 0; i < n; i++)      // 遍历所有可能的边，插入到堆
+        for (int j = i + 1; j < n; j++)
+            if (getWeight(i, j) != maxWeight)
             {
                 ed.head = i;
                 ed.tail = j;
-                ed.weight = getWeight(i,j);
+                ed.weight = getWeight(i, j);
                 H.Insert(ed);
             }
     int count = 0;
-    while(count < n-1)
+    while (count < n - 1)
     {
-        int root1,root2;
+        int root1, root2;
         H.RemoveMin(ed);
         root1 = F.Find(ed.head);
         root2 = F.Find(ed.tail);
-        if(root1 != root2)
+        if (root1 != root2)
         {
-            F.Union(root1,root2);
+            F.Union(root1, root2);
             MST.Insert(ed);
             count++;
         }
     }
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::Prim(const T u0, MinSpanTree<T,E>& MST)
+template <class T, class E>
+void Graphmtx<T, E>::Prim(const T u0, MinSpanTree<T, E> &MST)
 {
     int n = numVertices;
     int m = numEdges;
-    int u = getVertexPos(u0),v;
-    MinHeap<MSTEdgeNode<T,E>> H(m);
-    bool* Vmst = new bool[n];
-    for(int i=0;i<n;i++)
+    int u = getVertexPos(u0), v;
+    MinHeap<MSTEdgeNode<T, E>> H(m);
+    bool *Vmst = new bool[n];
+    for (int i = 0; i < n; i++)
         Vmst[i] = false;
     Vmst[u] = true;
 
-    MSTEdgeNode<T,E> ed;
+    MSTEdgeNode<T, E> ed;
     int count = 0;
     do
     {
         v = getFirstNeighbor(u);
-        while(v != -1)
+        while (v != -1)
         {
-            if(Vmst[v] == false)
+            if (Vmst[v] == false)
             {
                 ed.tail = u;
                 ed.head = v;
-                ed.weight = getWeight(u,v);
+                ed.weight = getWeight(u, v);
                 H.Insert(ed);
             }
-            v = getNextNeighbor(u,v);
+            v = getNextNeighbor(u, v);
         }
-        while(!H.IsEmpty() && count < n-1)
+        while (!H.IsEmpty() && count < n - 1)
         {
             H.RemoveMin(ed);
-            if(Vmst[ed.head] == false)
+            if (Vmst[ed.head] == false)
             {
                 MST.Insert(ed);
                 u = ed.head;
@@ -311,20 +313,20 @@ void Graphmtx<T,E>::Prim(const T u0, MinSpanTree<T,E>& MST)
                 break;
             }
         }
-    } while (count < n-1);
+    } while (count < n - 1);
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::Dijkstra(T v0, E dist[], int path[])
+template <class T, class E>
+void Graphmtx<T, E>::Dijkstra(T v0, E dist[], int path[])
 {
     int v = getVertexPos(v0);
     int n = numVertices;
-    bool* S = new bool[n];
-    for(int i=0;i<n;i++)    // 初始化S,dist,path
+    bool *S = new bool[n];
+    for (int i = 0; i < n; i++) // 初始化S,dist,path
     {
-        dist[i] = getWeight(v,i);
+        dist[i] = getWeight(v, i);
         S[i] = false;
-        if(i != v && dist[i] < maxValue)
+        if (i != v && dist[i] < maxValue)
             path[i] = v;
         else
             path[i] = -1;
@@ -332,23 +334,23 @@ void Graphmtx<T,E>::Dijkstra(T v0, E dist[], int path[])
 
     S[v] = true;
     dist[v] = 0;
-    for(int i=0;i<n-1;i++)  // 计数循环，除了初始点外还要加入n-1个点
+    for (int i = 0; i < n - 1; i++) // 计数循环，除了初始点外还要加入n-1个点
     {
         int min = maxValue;
         int u = v;
-        for(int j=0;j<n;j++)    // 选出还不在集合S中的离v最近的点
+        for (int j = 0; j < n; j++) // 选出还不在集合S中的离v最近的点
         {
-            if(S[j] == false && dist[j] < min)
+            if (S[j] == false && dist[j] < min)
             {
                 u = j;
                 min = dist[j];
             }
         }
         S[u] = true;
-        for(int k=0;k<n;k++)    //  用u作为中继点缩短其他点到v0的距离
+        for (int k = 0; k < n; k++) //  用u作为中继点缩短其他点到v0的距离
         {
-            E w = getWeight(u,k);
-            if(S[k] == false && w < maxValue && w + dist[u] < dist[k])
+            E w = getWeight(u, k);
+            if (S[k] == false && w < maxValue && w + dist[u] < dist[k])
             {
                 dist[k] = w + dist[u];
                 path[k] = u;
@@ -357,30 +359,92 @@ void Graphmtx<T,E>::Dijkstra(T v0, E dist[], int path[])
     }
 }
 
-template<class T, class E>
-void Graphmtx<T,E>::printShortestPath(T v0)
+template <class T, class E>
+void Graphmtx<T, E>::printShortestPath_Dij(T v0)
 {
     cout << "从顶点" << v0 << "到其他顶点的最短路径为：" << endl;
     int n = numVertices;
     int v = getVertexPos(v0);
     E *dist = new E[n];
     int path[n];
-    int j,k;
-    Dijkstra(v0,dist,path);
+    int j, k;
+    Dijkstra(v0, dist, path);
     int p[n];
-    for(int i=0;i<n;i++)
+    for (int i = 0; i < n; i++)
     {
-        if(i != v)
+        if (i != v)
         {
             j = i;
             k = 0;
-            while(j != v)
+            while (j != v)
             {
                 p[k++] = j;
                 j = path[j];
             }
             cout << "顶点" << getValue(i) << "的最短路径为：" << getValue(v);
-            while(k > 0)
+            while (k > 0)
+                cout << " " << getValue(p[--k]);
+            cout << endl;
+        }
+    }
+}
+
+template <class T, class E>
+void Graphmtx<T, E>::Bellman_Ford(T v0, E dist[], int path[])
+{
+    int v = getVertexPos(v0);
+    int n = NumberOfVertices();
+    E w;
+    for (int i = 0; i < n; i++)
+    {
+        dist[i] = getWeight(v, i);
+        if (i != v && dist[i] < maxValue)
+            path[i] = v;
+        else
+            path[i] = -1;
+    }
+    for (int k = 2; k < n; k++) //  计数n-2次,同时也是将dist^1逐渐变为dist^k
+    {
+        for (int u = 0; u < n; u++) //  以所有顶点作为中继点，更新dist
+        {
+            if (u != v)
+                for (int i = 0; i < n; i++)
+                {
+                    w = getWeight(i, u);
+                    if (dist[u] > dist[i] + w)
+                    {
+                        dist[u] = dist[i] + w;
+                        path[u] = i;
+                    }
+                }
+        }
+    }
+}
+
+template <class T, class E>
+void Graphmtx<T, E>::printShortestPath_BF(T v0)
+{
+    cout << "从顶点" << v0 << "到其他顶点的最短路径为：" << endl;
+    int n = numVertices;
+    int v = getVertexPos(v0);
+    E *dist = new E[n];
+    int path[n];
+    int j, k;
+    Bellman_Ford(v0, dist, path);
+    int p[n];
+    for (int i = 0; i < n; i++)
+    {
+        if (i != v)
+        {
+            j = i;
+            k = 0;
+            while (j != v)
+            {
+                p[k++] = j;
+                j = path[j];
+            }
+            cout << "顶点" << getValue(i) << "的最短路径为：" << getValue(v);
+            while (k > 0)
                 cout << " " << getValue(p[--k]);
             cout << endl;
         }
