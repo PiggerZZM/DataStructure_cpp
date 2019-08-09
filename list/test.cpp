@@ -10,7 +10,6 @@ using namespace std;
 
 int main()
 {
-    /*
     // 顺序表的测试
     int x;
     SeqList<int> sl;
@@ -26,8 +25,8 @@ int main()
     sl2 = sl;
     sl.output();
     sl2.output();
-    */
     
+    /* 
     // 单链表的测试
     LinkList<int> ll(14);
     int y = ll.Length();
@@ -41,6 +40,9 @@ int main()
     ll.Insert(0,134);
     ll.Insert(2,999);
     ll.output();
+    */
+
+    
    /* LinkList<int> ll2;
     ll2.inputFront(0);
     ll2.output();
@@ -53,6 +55,8 @@ int main()
     int a[3] = {0,1,2};
     ll.create(a,3);
     ll.output();
+     
+
     /*
 
     // 双向链表的测试，未完，缺output
@@ -74,6 +78,8 @@ int main()
     Sl.Remove(1);
     printf("%d\n",Sl.Length());
     */
+
+    
 
     return 0;
 }

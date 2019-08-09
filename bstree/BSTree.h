@@ -1,21 +1,19 @@
 #ifndef BSTREE_H
 #define BSTREE_H
 
-// 二叉搜索树德类定义
+// 二叉搜索树的类定义
 #include<iostream>
 #include<cstdlib>
 using namespace std;
 
-template<class E, class K>
-struct BSTNode  // 二叉树结点类
+template<class E, class K>  // E是数据类，K是关键码类
+struct BSTNode  // 二叉树结点结构
 {
-    E data;
-    BSTNode<E,K> *left, *right;
+    E data; // 数据域
+    BSTNode<E,K> *left, *right; // 左右子女指针
     BSTNode():left(NULL), right(NULL){}
     BSTNode(const E d, BSTNode<E,K> *L = NULL, BSTNode<E,K> *R = NULL):data(d),left(L),right(R){}
     ~BSTNode(){}
-    void setData(E d) {data = d;}
-    E getData() {return data;}
 };
 
 template<class E, class K>
@@ -26,7 +24,7 @@ private:
     K RefValue; // 输入停止标志
     BSTNode<E,K> *Search(const K x, BSTNode<E,K> *p);   //  递归搜索
     void makeEmpty(BSTNode<E,K> *&p);   // 递归置空
-    void PrintTree(const BSTNode<E,K> *p) const;  //  递归打印
+    void PrintTree(const BSTNode<E,K> *p) const;  //  按中序遍历递归打印
     BSTNode<E,K> *Min(BSTNode<E,K> *p) const;   // 递归求最小
     BSTNode<E,K> *Max(BSTNode<E,K> *p) const;   // 递归求最大
     bool Insert(const E e1, BSTNode<E,K> *&p);  // 递归插入
@@ -67,6 +65,8 @@ void BSTree<E,K>::makeEmpty(BSTNode<E,K> *&p)
         makeEmpty(p->right);
         delete p;
     }
+    else
+        return;
 }
 
 template<class E, class K>

@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include "SeqQueue.h"
 using namespace std;
-const char RefValue = '#';  // 子女为空的标志
+const char RefValue = '#'; // 子女为空的标志
 
 template <class T>
 struct BinTreeNode
 {
-    T data;
-    BinTreeNode<T> *leftChild, *rightChild;
+    T data;                                 // 数据域
+    BinTreeNode<T> *leftChild, *rightChild; // 左右子女指针
     BinTreeNode() : leftChild(NULL), rightChild(NULL) {}
     BinTreeNode(T x, BinTreeNode<T> *l = NULL, BinTreeNode<T> *r = NULL)
     {
@@ -41,54 +41,62 @@ private:
     // 用户使用时不应该让用户取私有参数如根结点等作为函数的参数再来调用
     // 因此将这些递归算法的实现全部放在私有域，留下不需要参数的接口放在公共域
     // 公共域的函数实现为调用私有域的对应函数，并将私有参数作为参数传入
-    BinTreeNode<T> *root; // 根指针
-    void destroy(BinTreeNode<T> *&subTree);
-    int Height(BinTreeNode<T> *subTree) const;
-    int Size(BinTreeNode<T> *subTree);
-    void CreateBinTree(istream &in, BinTreeNode<T> *&subTree); // 根据前序遍历序列建立二叉树
-    BinTreeNode<T> *Copy(BinTreeNode<T> *orinode);
+    BinTreeNode<T> *root;                                      // 根指针
+    void destroy(BinTreeNode<T> *&subTree);                    // 递归：销毁由subTree为根节点的子树
+    int Height(BinTreeNode<T> *subTree) const;                 // 递归：求由subTree为根节点的子树高度
+    int Size(BinTreeNode<T> *subTree) const;                   // 递归：求由subTree为根节点的子树结点个数
+    void CreateBinTree(istream &in, BinTreeNode<T> *&subTree); // 递归：根据前序遍历序列建立二叉树
+    BinTreeNode<T> *Copy(BinTreeNode<T> *orinode);  // 递归：复制由orinode为根节点的子树
     void PreOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p)); // 函数指针，visit函数为用户定义访问函数
     void InOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
     void PostOrder(BinTreeNode<T> *subTree, void (*visit)(BinTreeNode<T> *p));
-    void LevelOrder(void (*visit)(BinTreeNode<T> *p));
     void output(); //  从subTree结点开始按先序遍历序列输出二叉树
-    void Switch(BinTreeNode<T> *subTree);
+    void Switch(BinTreeNode<T> *subTree);   // 递归:以subTree为根的子树做镜像对称
     BinTreeNode<T> *Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *current); // 从subTree结点开始按照先序遍历找父结点
     BinTreeNode<T> *LeftChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->leftChild; }
     BinTreeNode<T> *RightChild(BinTreeNode<T> *current) { return (current == NULL) ? NULL : current->rightChild; }
-    BinTreeNode<T> *Find(BinTreeNode<T> *subTree, const T value);
-    friend bool equal<T>(BinTreeNode<T> *a, BinTreeNode<T> *b); // 判断是否相等
-    int CountLeaf(BinTreeNode<T> *subTree);
+    BinTreeNode<T> *Find(BinTreeNode<T> *subTree, const T value);   // 递归：在subTree为根的子树上搜索value
+    friend bool equal<T>(BinTreeNode<T> *a, BinTreeNode<T> *b); // 判断a为根的子树和b为根的子树是否相同
+    int CountLeaf(BinTreeNode<T> *subTree); // 递归：计算以subTree为根的子树的叶结点个数
     static void Print(BinTreeNode<T> *p)
     {
         cout << p->data << " ";
     }
+
 public:
     BinaryTree() : root(NULL) {}
     BinaryTree(const BinaryTree<T> &s);
     ~BinaryTree() { destroy(root); }
-    int Height() { return Height(root);}
-    int Size() { return Size(root);}
-    bool IsEmpty() { return root == NULL; }
-    void Switch();
-    BinTreeNode<T> *Find(const T x);    // 按照先序遍历序列搜索x
+    int Height() { return Height(root); }   // 求高度
+    int Size() { return Size(root); }   // 求结点个数
+    bool IsEmpty() { return root == NULL; } // 判树空
+    void Switch();  // 镜像对称
+    BinTreeNode<T> *Find(const T x);                 // 按照先序遍历序列搜索x
     BinTreeNode<T> *getRoot() const { return root; } // 取根指针
-    bool Insert(T item);     // 按照find函数搜索失败的位置插入
-    bool Remove(T item);     // 按照find函数搜索成功的位置删除子树
-    int CountLeaf();      
-    friend bool operator==(const BinaryTree<T> &s, const BinaryTree<T> &t)  // 判两棵二叉树是否相等
+    void PreOrder(void (*visit)(BinTreeNode<T> *p)) {PreOrder(root,visit);} // 前序遍历
+    void InOrder(void (*visit)(BinTreeNode<T> *p)) {InOrder(root,visit);}   // 中序遍历
+    void PostOrder(void (*visit)(BinTreeNode<T> *p)) {PostOrder(root,visit);}   // 后序遍历
+    void LevelOrder(void (*visit)(BinTreeNode<T> *p));  // 层序遍历
+    int CountLeaf();    // 计算叶结点个数
+    friend bool operator==(const BinaryTree<T> &s, const BinaryTree<T> &t) // 判两棵二叉树是否相等
     {
         return equal(s.root, t.root);
     }
-    friend istream& operator>> (istream& in, BinaryTree<T> &t)  // 按先序遍历序列建立二叉树
+    friend istream &operator>>(istream &in, BinaryTree<T> &t) // 按先序遍历序列建立二叉树
     {
+        cout << "输入先序遍历序列建立二叉树，叶结点为空用#表示" << endl;
         t.CreateBinTree(in, t.root);
         return in;
     }
-    friend ostream& operator<< (ostream& out, BinaryTree<T> &t) // 按先序遍历输出
+    friend ostream &operator<<(ostream &out, BinaryTree<T> &t) // 按先序遍历输出
     {
         t.output();
         return out;
+    }
+    BinaryTree<T>& operator = (const BinaryTree<T> &oritree)
+    {
+        root = Copy(oritree.root);
+        return *this;
     }
 };
 
@@ -142,7 +150,7 @@ void BinaryTree<T>::destroy(BinTreeNode<T> *&subTree)
 template <class T>
 void BinaryTree<T>::output()
 {
-    PreOrder(root,Print);
+    PreOrder(root, Print);
 }
 
 // 递归求current结点的父节点
@@ -164,10 +172,9 @@ BinTreeNode<T> *BinaryTree<T>::Parent(BinTreeNode<T> *subTree, BinTreeNode<T> *c
     }
 }
 
-
 // 左子树的大小加上右子树的大小+1
 template <class T>
-int BinaryTree<T>::Size(BinTreeNode<T> *subTree)
+int BinaryTree<T>::Size(BinTreeNode<T> *subTree) const
 {
     if (subTree == NULL)
         return 0;
@@ -202,11 +209,14 @@ BinTreeNode<T> *BinaryTree<T>::Copy(BinTreeNode<T> *orinode)
 {
     if (orinode == NULL)
         return NULL;
-    BinTreeNode<T> *temp = new BinTreeNode<T>;
-    temp->data = orinode->data;
-    temp->leftChild = Copy(orinode->leftChild);
-    temp->rightChild = Copy(orinode->rightChild);
-    return temp;
+    else
+    {
+        BinTreeNode<T> *temp = new BinTreeNode<T>;
+        temp->data = orinode->data;
+        temp->leftChild = Copy(orinode->leftChild);
+        temp->rightChild = Copy(orinode->rightChild);
+        return temp;
+    }
 }
 
 //  输入先序遍历序列构建二叉树
@@ -226,77 +236,77 @@ void BinaryTree<T>::CreateBinTree(istream &in, BinTreeNode<T> *&subTree)
     }
 }
 
-template<class T>
-BinTreeNode<T>* BinaryTree<T>::Find(BinTreeNode<T> *subTree, const T value)
+template <class T>
+BinTreeNode<T> *BinaryTree<T>::Find(BinTreeNode<T> *subTree, const T value)
 {
-    if(subTree == NULL)
+    if (subTree == NULL)
         return NULL;
-    if(subTree->data == value)
+    if (subTree->data == value)
         return subTree;
     else
     {
         BinTreeNode<T> *temp;
-        if((temp = Find(subTree->leftChild, value)) != NULL)
+        if ((temp = Find(subTree->leftChild, value)) != NULL)
             return temp;
         else
             return temp = Find(subTree->rightChild, value);
     }
 }
 
-template<class T>
-BinTreeNode<T>* BinaryTree<T>::Find(const T value)
+template <class T>
+BinTreeNode<T> *BinaryTree<T>::Find(const T value)
 {
-    BinTreeNode<T> *temp = Find(root,value);
+    BinTreeNode<T> *temp = Find(root, value);
     return temp;
 }
 
 // 层次遍历：根节点入队，每遍历一个结点就将其左子女和右子女入队
-template<class T>
+template <class T>
 void BinaryTree<T>::LevelOrder(void (*visit)(BinTreeNode<T> *p))
 {
     SeqQueue<BinTreeNode<T> *> Q;
     BinTreeNode<T> *p = root;
     Q.EnQueue(p);
-    while(! Q.IsEmpty())
+    while (!Q.IsEmpty())
     {
         Q.DeQueue(p);
         visit(p);
-        if(p->leftChild != NULL)
+        if (p->leftChild != NULL)
             Q.EnQueue(p->leftChild);
-        if(p->rightChild != NULL)
+        if (p->rightChild != NULL)
             Q.EnQueue(p->rightChild);
     }
 }
 
-template<class T>
+template <class T>
 int BinaryTree<T>::CountLeaf()
 {
     return CountLeaf(root);
 }
 
-template<class T>
+template <class T>
 int BinaryTree<T>::CountLeaf(BinTreeNode<T> *subTree)
 {
-    if(subTree == NULL)
+    if (subTree == NULL)
         return 0;
-    if(subTree->leftChild == NULL && subTree->rightChild == NULL)
+    if (subTree->leftChild == NULL && subTree->rightChild == NULL)
         return 1;
     else
         return CountLeaf(subTree->leftChild) + CountLeaf(subTree->rightChild);
 }
 
-template<class T>
+template <class T>
 void BinaryTree<T>::Switch()
 {
     Switch(root);
 }
 
-template<class T>
+template <class T>
 void BinaryTree<T>::Switch(BinTreeNode<T> *subTree)
 {
-    if(subTree->leftChild != NULL)
+    if (subTree->leftChild != NULL)
         Switch(subTree->leftChild);
-    if(subTree->rightChild != NULL)
+    if (subTree->rightChild != NULL)
         Switch(subTree->rightChild);
     BinTreeNode<T> *temp1 = subTree->leftChild;
     subTree->leftChild = subTree->rightChild;
